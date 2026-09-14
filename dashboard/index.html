@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ERA-EXPRESS — Form Otomatis Pengiriman 21 Express</title>
-<script src="xlsx.full.min.js"></script>
+<script src="exceljs.min.js"></script>
 <style>
   :root{
     --blue:#0b5fa5; --blue-dark:#083f6e; --green:#1a9e6b; --green-dark:#127a52;
@@ -529,7 +529,48 @@ function downloadBlob(content, filename, mime){
   URL.revokeObjectURL(url);
 }
 
-function exportExcel(){
+function toTitleCase(str){
+  return String(str||'').toLowerCase().replace(/\b\w/g, c=>c.toUpperCase());
+}
+function formatTglShort(iso){
+  if(!iso) return '';
+  const [y,m] = iso.split('-');
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return `${bulan[parseInt(m)-1]}-${y.slice(2)}`;
+}
+
+const NAVY = 'FF1F3864';
+const RED = 'FFC00000';
+const WHITE = 'FFFFFFFF';
+const THIN = {style:'thin', color:{argb:'FF808080'}};
+const ALL_BORDERS = {top:THIN,bottom:THIN,left:THIN,right:THIN};
+
+function styleHeaderCell(cell){
+  cell.font = {bold:true, color:{argb:WHITE}, size:11};
+  cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:NAVY}};
+  cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+  cell.border = ALL_BORDERS;
+}
+function styleDataCell(cell, opts){
+  opts = opts||{};
+  cell.border = ALL_BORDERS;
+  cell.alignment = {horizontal: opts.align||'left', vertical:'middle', wrapText: !!opts.wrap};
+  if(opts.bold) cell.font = {bold:true};
+}
+function styleTotalCell(cell){
+  cell.font = {bold:true, color:{argb:WHITE}};
+  cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:NAVY}};
+  cell.alignment = {horizontal:'center', vertical:'middle'};
+  cell.border = ALL_BORDERS;
+}
+function styleRedCell(cell){
+  cell.font = {bold:true, color:{argb:WHITE}};
+  cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:RED}};
+  cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+  cell.border = ALL_BORDERS;
+}
+
+async function exportExcel(){
   const kodes = Object.keys(selected);
   if(kodes.length===0){ alert('Pilih minimal 1 toko terlebih dahulu.'); return; }
   if(!lastBatch) generatePreview();
@@ -543,14 +584,98 @@ function exportExcel(){
   const stores = lastBatch.stores;
   const totalQty = stores.reduce((a,s)=>a+(selected[s.kode]||0),0);
   const kotaSet = new Set(stores.map(s=>s.kota));
+  const pic = document.getElementById('f_pic').value;
+  const kodeAccount = document.getElementById('f_kodeAccount').value;
 
-  const wb = XLSX.utils.book_new();
+  const wb = new ExcelJS.Workbook();
 
-  // --- SHEET 1: FORM ---
+  // --- SHEET 1: TOKO TERPILIH ---
+  const wsRekap = wb.addWorksheet('TOKO TERPILIH');
+  wsRekap.columns = [
+    {width:5},{width:12},{width:34},{width:10},{width:7},{width:10},{width:16},{width:24},{width:16},{width:50}
+  ];
+  const rekapHeader = ['No','SAP Code','Store Name','Resi','Qty','Region','Kota','Store Leader','Contact','Store Address'];
+  const hRow = wsRekap.addRow(rekapHeader);
+  hRow.eachCell(c=>styleHeaderCell(c));
+  stores.forEach((s,i)=>{
+    const row = wsRekap.addRow([i+1, s.kode, s.nama, '', selected[s.kode], s.region||'REGION 5', toTitleCase(s.kota), s.up, s.kontak, s.alamat]);
+    row.eachCell((c, colNum)=>{
+      const align = [1,4,5,6].includes(colNum) ? 'center' : 'left';
+      styleDataCell(c, {align, wrap: colNum===10});
+    });
+  });
+  const totalRow = wsRekap.addRow(['TOTAL','','','', totalQty,'','','','','']);
+  wsRekap.mergeCells(totalRow.number,1,totalRow.number,3);
+  totalRow.eachCell({includeEmpty:true}, c=>styleTotalCell(c));
+  totalRow.getCell(1).alignment = {horizontal:'center', vertical:'middle'};
+
+  // --- SHEET 2: TAG ALAMAT (2 tags per row block, like template asli) ---
+  const wsTag = wb.addWorksheet('TAG ALAMAT');
+  wsTag.columns = [
+    {width:3},{width:16},{width:2.5},{width:42},{width:3},{width:3},{width:3},{width:3},{width:3},{width:3},{width:8},{width:6},{width:16},{width:2.5},{width:42}
+  ];
+
+  function writeTagBlock(startRow, colOffset, store, no){
+    const fields = [
+      ['RESI', ''],
+      ['TANGGAL/BULAN', formatTglShort(tglReq)],
+      ['NAMA VENDOR', vendor],
+      ['NAMA BARANG', jenis],
+      ['QTY', selected[store.kode]],
+      null,
+      ['ALOKASI TUJUAN', toTitleCase(store.kota)],
+      null,
+      ['KODE STORE', store.kode],
+      ['NAMA STORE', store.nama],
+      ['ALAMAT', store.alamat],
+      null,
+      null,
+      ['STORE LEADER', store.up],
+      ['KONTAK', store.kontak],
+      null,
+      ['PIC', pic],
+      null,
+      ['KODE ACCOUNT', kodeAccount],
+      null,
+    ];
+    fields.forEach((f, i)=>{
+      const r = startRow + i;
+      const cLabel = wsTag.getCell(r, colOffset+1);
+      const cSep = wsTag.getCell(r, colOffset+2);
+      const cVal = wsTag.getCell(r, colOffset+3);
+      if(f){
+        cLabel.value = f[0]; cLabel.font = {bold:true};
+        cSep.value = ':';
+        cVal.value = f[1];
+        cVal.alignment = {wrapText:true, vertical:'middle'};
+      }
+      [cLabel,cSep,cVal].forEach(c=>{ c.border = ALL_BORDERS; });
+    });
+    const noCell = wsTag.getCell(startRow, colOffset+10);
+    noCell.value = 'NO :'; noCell.font = {bold:true}; noCell.alignment = {horizontal:'right'};
+    const noVal = wsTag.getCell(startRow, colOffset+11);
+    noVal.value = no; noVal.font = {bold:true};
+    return fields.length;
+  }
+
+  let curRow = 1;
+  for(let i=0;i<stores.length;i+=2){
+    const h1 = writeTagBlock(curRow, 1, stores[i], i+1);
+    const h2 = (i+1<stores.length) ? writeTagBlock(curRow, 14, stores[i+1], i+2) : 0;
+    curRow += Math.max(h1,h2) + 1;
+  }
+
+  // --- SHEET 3: FORM ---
+  const wsForm = wb.addWorksheet('FORM');
+  wsForm.columns = [
+    {width:4},{width:14},{width:28},{width:40},{width:14},{width:16},{width:10},{width:22},{width:16},{width:8},{width:14},{width:18}
+  ];
   const formHeader = ['NO','KODE ACCOUNT','PT','LOKASI JEMPUT','TANGGAL REQ','TUJUAN','SERVICE','PENGIRIM','JENIS BARANG','QTY','PACKING KAYU','TANGGAL PICK UP'];
-  const formRow = [
+  const fHead = wsForm.addRow(formHeader);
+  fHead.eachCell(c=>styleHeaderCell(c));
+  const fRow = wsForm.addRow([
     1,
-    document.getElementById('f_kodeAccount').value,
+    kodeAccount,
     document.getElementById('f_pt').value,
     document.getElementById('f_lokasiJemput').value,
     formatTgl(tglReq),
@@ -561,69 +686,21 @@ function exportExcel(){
     totalQty,
     document.getElementById('f_packingKayu').value,
     formatTgl(tglPickup) + '\n' + jamPickup
-  ];
-  const wsForm = XLSX.utils.aoa_to_sheet([formHeader, formRow]);
-  wsForm['!cols'] = [{wch:4},{wch:14},{wch:28},{wch:40},{wch:14},{wch:16},{wch:10},{wch:22},{wch:16},{wch:8},{wch:14},{wch:18}];
-  XLSX.utils.book_append_sheet(wb, wsForm, 'FORM');
-
-  // --- SHEET 2: TAG ALAMAT (2 tags per row block, like original template) ---
-  const tagRows = [];
-  const pic = document.getElementById('f_pic').value;
-  const kodeAccount = document.getElementById('f_kodeAccount').value;
-
-  function tagBlock(store, no){
-    const qty = selected[store.kode];
-    return [
-      ['RESI',':','', null,null,null,null,null,null,null,'NO :',no],
-      ['TANGGAL/BULAN',':',formatTgl(tglReq)],
-      ['NAMA VENDOR',':',vendor],
-      ['NAMA BARANG',':',jenis],
-      ['QTY',':',qty],
-      [],
-      ['ALOKASI TUJUAN',':',store.kota],
-      [],
-      ['KODE STORE',':',store.kode],
-      ['NAMA STORE',':',store.nama],
-      ['ALAMAT',':',store.alamat],
-      [],
-      [],
-      ['STORE LEADER',':',store.up],
-      ['KONTAK',':',store.kontak],
-      [],
-      ['PIC',':',pic],
-      [],
-      ['KODE ACCOUNT',':',kodeAccount],
-      [],
-    ];
-  }
-
-  for(let i=0;i<stores.length;i+=2){
-    const left = tagBlock(stores[i], i+1);
-    const right = (i+1<stores.length) ? tagBlock(stores[i+1], i+2) : null;
-    const maxLen = Math.max(left.length, right?right.length:0);
-    for(let r=0;r<maxLen;r++){
-      const lRow = left[r]||[];
-      const rRow = right?(right[r]||[]):[];
-      const combined = new Array(1).fill(null).concat(lRow); // shift by 1 col (col A blank like original)
-      while(combined.length < 12) combined.push(null);
-      combined.push(...rRow);
-      tagRows.push(combined);
-    }
-    tagRows.push([]); // blank separator row between blocks
-  }
-  const wsTag = XLSX.utils.aoa_to_sheet(tagRows);
-  wsTag['!cols'] = [{wch:3},{wch:16},{wch:2.5},{wch:42},{wch:3},{wch:3},{wch:3},{wch:3},{wch:3},{wch:3},{wch:8},{wch:6},{wch:16},{wch:2.5},{wch:42}];
-  XLSX.utils.book_append_sheet(wb, wsTag, 'TAG ALAMAT');
-
-  // --- SHEET 3: TOKO TERPILIH (rekap untuk driver) ---
-  const rekapHeader = ['No','Kode','Nama Toko','Kota','Format Toko','Store Leader','Kontak','Alamat','Qty'];
-  const rekapRows = stores.map((s,i)=>[i+1, s.kode, s.nama, s.kota, s.format||'', s.up, s.kontak, s.alamat, selected[s.kode]]);
-  const wsRekap = XLSX.utils.aoa_to_sheet([rekapHeader, ...rekapRows]);
-  wsRekap['!cols'] = [{wch:4},{wch:8},{wch:32},{wch:18},{wch:18},{wch:20},{wch:14},{wch:50},{wch:6}];
-  XLSX.utils.book_append_sheet(wb, wsRekap, 'TOKO TERPILIH');
+  ]);
+  fRow.height = 60;
+  fRow.eachCell((c,colNum)=>{
+    if(colNum===5 || colNum===12){ styleRedCell(c); }
+    else { styleDataCell(c, {align: [1,10].includes(colNum)?'center':'left', wrap:true}); }
+  });
 
   const filename = `ERA-EXPRESS_${ref}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 
   saveHistory(lastBatch, totalQty, kotaSet.size);
 }
