@@ -3,3 +3,6 @@
 
 # Local Netlify folder
 .netlify
+
+# Raw source assets (compressed copies live in dashboard/)
+/public/

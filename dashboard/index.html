@@ -18,26 +18,8 @@
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
 
   /* ===== HERO HEADER ===== */
-  .hero{background:linear-gradient(120deg,var(--navy-900) 0%,var(--navy-700) 45%,var(--teal-600) 100%);color:#fff;position:relative;overflow:hidden;}
-  .hero-inner{max-width:1360px;margin:0 auto;padding:22px 28px 26px;position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;}
-  .hero-brand{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.5px;color:#fca5a5;margin-bottom:10px;}
-  .hero-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--erafone-red);box-shadow:0 0 0 3px rgba(227,30,36,.25);}
-  .hero h1{margin:0;font-size:30px;font-weight:800;letter-spacing:.5px;background:linear-gradient(90deg,#ffffff,#9be8e2);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .hero .subtitle{margin:6px 0 0;font-size:14.5px;font-weight:600;color:#e6f6f5;}
-  .hero .desc{margin:4px 0 0;font-size:12.5px;color:#cfe3e8;max-width:560px;}
-  .hero-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
-  .hero-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(2px);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;}
-  .hero-pill svg{width:13px;height:13px;flex:none;}
-  .hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:200px;}
-  .hero-user{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:8px 14px 8px 8px;}
-  .hero-user .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--teal-500),var(--navy-600));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex:none;}
-  .hero-user .who{line-height:1.25;}
-  .hero-user .who b{display:block;font-size:13px;}
-  .hero-user .who span{display:block;font-size:10.5px;color:#cfe3e8;}
-  .hero-region{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:10px 14px;text-align:right;font-size:11.5px;color:#dcf3f1;}
-  .hero-region b{display:block;font-size:14px;color:#fff;}
-  .hero-svg{position:absolute;right:0;top:0;bottom:0;width:46%;opacity:.5;z-index:1;pointer-events:none;}
-  @media (max-width:900px){.hero-svg{display:none;} .hero-side{align-items:flex-start;}}
+  .hero-banner{display:block;width:100%;height:auto;line-height:0;background:var(--navy-900);}
+  .hero-banner img{display:block;width:100%;height:auto;}
 
   .wrap{max-width:1360px;margin:0 auto;padding:20px 24px 60px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
@@ -116,48 +98,8 @@
 </head>
 <body>
 
-<div class="hero">
-  <svg class="hero-svg" viewBox="0 0 700 260" preserveAspectRatio="xMaxYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 210 L700 210" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
-    <path d="M60 150 Q260 40 460 120 T680 60" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="6 8" fill="none"/>
-    <circle cx="60" cy="150" r="6" fill="#9be8e2"/>
-    <circle cx="460" cy="120" r="6" fill="#9be8e2"/>
-    <circle cx="680" cy="60" r="6" fill="#9be8e2"/>
-    <g transform="translate(300,150)">
-      <rect x="0" y="0" width="130" height="60" rx="6" fill="rgba(255,255,255,.16)"/>
-      <rect x="130" y="16" width="55" height="44" rx="6" fill="rgba(255,255,255,.22)"/>
-      <circle cx="35" cy="66" r="10" fill="rgba(255,255,255,.3)"/>
-      <circle cx="150" cy="66" r="10" fill="rgba(255,255,255,.3)"/>
-      <rect x="18" y="18" width="94" height="26" rx="3" fill="rgba(255,255,255,.12)"/>
-    </g>
-    <rect x="500" y="90" width="46" height="60" rx="4" fill="rgba(255,255,255,.14)"/>
-    <rect x="555" y="70" width="46" height="80" rx="4" fill="rgba(255,255,255,.10)"/>
-    <rect x="610" y="105" width="46" height="45" rx="4" fill="rgba(255,255,255,.14)"/>
-  </svg>
-  <div class="hero-inner">
-    <div>
-      <div class="hero-brand"><span class="dot"></span>ERAFONE · RETAIL LOGISTICS</div>
-      <h1>ERA-EXPRESS</h1>
-      <p class="subtitle">Form Otomatis Pengiriman 21 Express · Region 5</p>
-      <p class="desc">Pilih toko tujuan, isi detail barang, generate Form &amp; Tag Alamat dalam hitungan klik.</p>
-      <div class="hero-pills">
-        <span class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>Lebih Cepat</span>
-        <span class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Lebih Akurat</span>
-        <span class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1z"/></svg>Otomatis</span>
-        <span class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v10m-12-12v18m0 0H5a2 2 0 0 1-2-2V9m6 12h10a2 2 0 0 0 2-2V9"/></svg>Terintegrasi</span>
-      </div>
-    </div>
-    <div class="hero-side">
-      <div class="hero-user">
-        <div class="avatar" id="heroAvatar">G</div>
-        <div class="who">
-          <b id="heroName">Ghesang</b>
-          <span id="heroRole">VMD Assistant Manager</span>
-        </div>
-      </div>
-      <div class="hero-region">Region 5<br><b>JABODETABEK</b></div>
-    </div>
-  </div>
+<div class="hero-banner">
+  <img src="header-banner.jpg" alt="ERA-EXPRESS — Form Otomatis Pengiriman 21 Express, Region 5">
 </div>
 
 <div class="wrap">
@@ -365,19 +307,6 @@ document.getElementById('f_tglPickup').value = todayISO(1);
 document.getElementById('f_jenisBarang').addEventListener('change', e=>{
   document.getElementById('f_jenisBarangCustom').style.display = e.target.value==='__custom' ? 'block':'none';
 });
-
-function syncHeroProfile(){
-  const nama = document.getElementById('f_pengirimNama').value.trim() || 'Admin';
-  const picRaw = document.getElementById('f_pic').value.trim();
-  const roleMatch = picRaw.match(/\(([^)]+)\)/);
-  const role = roleMatch ? roleMatch[1] : 'Admin Region 5';
-  document.getElementById('heroName').textContent = nama;
-  document.getElementById('heroRole').textContent = role;
-  document.getElementById('heroAvatar').textContent = nama.trim().charAt(0).toUpperCase() || 'A';
-}
-document.getElementById('f_pengirimNama').addEventListener('input', syncHeroProfile);
-document.getElementById('f_pic').addEventListener('input', syncHeroProfile);
-syncHeroProfile();
 
 function uniqueKota(){
   return [...new Set(STORES.map(s=>s.kota))].sort();
