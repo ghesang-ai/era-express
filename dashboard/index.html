@@ -609,11 +609,15 @@ async function exportExcel(){
   totalRow.eachCell({includeEmpty:true}, c=>styleTotalCell(c));
   totalRow.getCell(1).alignment = {horizontal:'center', vertical:'middle'};
 
-  // --- SHEET 2: TAG ALAMAT (2 tags per row block, like template asli) ---
+  // --- SHEET 2: TAG ALAMAT (2 tags per row block, meniru layout template asli) ---
   const wsTag = wb.addWorksheet('TAG ALAMAT');
-  wsTag.columns = [
-    {width:3},{width:16},{width:2.5},{width:42},{width:3},{width:3},{width:3},{width:3},{width:3},{width:3},{width:8},{width:6},{width:16},{width:2.5},{width:42}
-  ];
+  const TAG_ROW_H = 18;
+  const ALAMAT_ROW_H = 60;
+  const ALAMAT_FIELD_INDEX = 10;
+  [
+    [1,4],[2,27.5],[3,2.5],[4,30],      // A margin, B label, C ':', D value (block 1)
+    [15,27.5],[16,2.5],[17,30],          // O label, P ':', Q value (block 2)
+  ].forEach(([col,w])=>{ wsTag.getColumn(col).width = w; });
 
   function writeTagBlock(startRow, colOffset, store, no){
     const fields = [
@@ -642,12 +646,18 @@ async function exportExcel(){
       const r = startRow + i;
       const cLabel = wsTag.getCell(r, colOffset+1);
       const cSep = wsTag.getCell(r, colOffset+2);
+      if(i === ALAMAT_FIELD_INDEX){
+        // ALAMAT butuh ruang lebih: gabung horizontal ke kolom-kolom kosong di kanannya, wrap khusus di sini
+        wsTag.mergeCells(r, colOffset+3, r, colOffset+11);
+      }
       const cVal = wsTag.getCell(r, colOffset+3);
       if(f){
         cLabel.value = f[0]; cLabel.font = {bold:true};
         cSep.value = ':';
         cVal.value = f[1];
-        cVal.alignment = {wrapText:true, vertical:'middle'};
+        cVal.alignment = (i === ALAMAT_FIELD_INDEX)
+          ? {wrapText:true, vertical:'middle', horizontal:'left'}
+          : {wrapText:false, vertical:'middle', horizontal:'left'};
       }
       [cLabel,cSep,cVal].forEach(c=>{ c.border = ALL_BORDERS; });
     });
@@ -662,7 +672,11 @@ async function exportExcel(){
   for(let i=0;i<stores.length;i+=2){
     const h1 = writeTagBlock(curRow, 1, stores[i], i+1);
     const h2 = (i+1<stores.length) ? writeTagBlock(curRow, 14, stores[i+1], i+2) : 0;
-    curRow += Math.max(h1,h2) + 1;
+    const blockLen = Math.max(h1,h2);
+    for(let r=0;r<blockLen;r++){
+      wsTag.getRow(curRow+r).height = (r===ALAMAT_FIELD_INDEX) ? ALAMAT_ROW_H : TAG_ROW_H;
+    }
+    curRow += blockLen + 1;
   }
 
   // --- SHEET 3: FORM ---
