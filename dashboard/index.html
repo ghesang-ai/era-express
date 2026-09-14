@@ -171,10 +171,10 @@
         </div>
         <div>
           <label>&nbsp;</label>
-          <button class="btn-outline" style="width:100%" onclick="applyQtyToAll()">Terapkan Qty ke Semua Toko Terpilih</button>
+          <button class="btn-outline" style="width:100%" onclick="applyQtyToAll()">Timpa Qty Semua Toko Terpilih</button>
         </div>
       </div>
-      <p class="small-note">Nama Vendor pada Tag Alamat otomatis mengikuti singkatan Lokasi Jemput. Field ini dapat diedit ulang di preview bila diperlukan.</p>
+      <p class="small-note">Qty default dipakai saat toko baru dicentang. Untuk mengubah Qty banyak toko sekaligus tanpa satu-satu: gunakan filter Kota/Format di bagian "Pilih Toko Tujuan" lalu tombol "Terapkan ke Hasil Filter" — cocok kalau Qty berbeda per kota/format toko. Nama Vendor pada Tag Alamat otomatis mengikuti singkatan Lokasi Jemput dan dapat diedit ulang di preview.</p>
     </div>
   </div>
 
@@ -191,6 +191,11 @@
       </select>
       <button class="btn-outline" onclick="selectAllFiltered(true)">Pilih Semua (hasil filter)</button>
       <button class="btn-outline" onclick="selectAllFiltered(false)">Hapus Semua (hasil filter)</button>
+    </div>
+    <div class="search-bar" style="align-items:center;background:#f7fafc;border:1px dashed var(--border);border-radius:8px;padding:10px 12px;">
+      <span style="font-size:12.5px;color:var(--muted);white-space:normal;">✏️ Ubah Qty massal untuk toko yang <b>sudah terpilih pada hasil filter saat ini</b> (filter Kota/Format/pencarian di atas dulu, baru terapkan):</span>
+      <input type="number" id="bulkQtyValue" min="1" value="6" style="max-width:90px;">
+      <button class="btn-secondary" onclick="applyQtyToFiltered()">Terapkan ke Hasil Filter</button>
     </div>
     <div class="store-table-wrap">
       <table>
@@ -348,6 +353,17 @@ function applyQtyToAll(){
   const q = defaultQty();
   Object.keys(selected).forEach(k=> selected[k]=q);
   renderStoreTable();
+}
+function applyQtyToFiltered(){
+  const val = parseInt(document.getElementById('bulkQtyValue').value)||1;
+  let count = 0;
+  filteredStores().forEach(s=>{
+    if(selected.hasOwnProperty(s.kode)){ selected[s.kode] = val; count++; }
+  });
+  renderStoreTable();
+  if(count===0){
+    alert('Tidak ada toko terpilih pada hasil filter saat ini.\n\nCentang toko dulu (atau klik "Pilih Semua (hasil filter)"), baru klik "Terapkan ke Hasil Filter".');
+  }
 }
 function updateSummary(){
   const kodes = Object.keys(selected);
