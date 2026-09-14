@@ -619,6 +619,10 @@ async function exportExcel(){
     [15,27.5],[16,2.5],[17,30],          // O label, P ':', Q value (block 2)
   ].forEach(([col,w])=>{ wsTag.getColumn(col).width = w; });
 
+  const TAG_BOX_LEFT_OFFSET = 1;   // label column, relative to colOffset
+  const TAG_BOX_RIGHT_OFFSET = 11; // right edge of the block (matches the ALAMAT merge width)
+  const TAG_BOX_LAST_ROW_OFFSET = 18; // last meaningful field (KODE ACCOUNT); row 19 is a trailing spacer
+
   function writeTagBlock(startRow, colOffset, store, no){
     const fields = [
       ['RESI', ''],
@@ -648,7 +652,7 @@ async function exportExcel(){
       const cSep = wsTag.getCell(r, colOffset+2);
       if(i === ALAMAT_FIELD_INDEX){
         // ALAMAT butuh ruang lebih: gabung horizontal ke kolom-kolom kosong di kanannya, wrap khusus di sini
-        wsTag.mergeCells(r, colOffset+3, r, colOffset+11);
+        wsTag.mergeCells(r, colOffset+3, r, colOffset+TAG_BOX_RIGHT_OFFSET);
       }
       const cVal = wsTag.getCell(r, colOffset+3);
       if(f){
@@ -659,12 +663,27 @@ async function exportExcel(){
           ? {wrapText:true, vertical:'middle', horizontal:'left'}
           : {wrapText:false, vertical:'middle', horizontal:'left'};
       }
-      [cLabel,cSep,cVal].forEach(c=>{ c.border = ALL_BORDERS; });
     });
     const noCell = wsTag.getCell(startRow, colOffset+10);
     noCell.value = 'NO :'; noCell.font = {bold:true}; noCell.alignment = {horizontal:'right'};
     const noVal = wsTag.getCell(startRow, colOffset+11);
     noVal.value = no; noVal.font = {bold:true};
+
+    // Satu garis kotak bersih mengelilingi seluruh tag (bukan grid di tiap sel) —
+    // border hanya di sisi TERLUAR supaya tidak ada garis nyasar di tengah sel gabungan.
+    const top = startRow, bottom = startRow + TAG_BOX_LAST_ROW_OFFSET;
+    const left = colOffset + TAG_BOX_LEFT_OFFSET, right = colOffset + TAG_BOX_RIGHT_OFFSET;
+    for(let rr=top; rr<=bottom; rr++){
+      for(let cc=left; cc<=right; cc++){
+        const cell = wsTag.getCell(rr, cc);
+        const border = {};
+        if(rr===top) border.top = {style:'medium'};
+        if(rr===bottom) border.bottom = {style:'medium'};
+        if(cc===left) border.left = {style:'medium'};
+        if(cc===right) border.right = {style:'medium'};
+        if(Object.keys(border).length) cell.border = Object.assign({}, cell.border, border);
+      }
+    }
     return fields.length;
   }
 
