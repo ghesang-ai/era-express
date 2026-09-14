@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERA-EXPRESS — Form Otomatis Pengiriman 21 Express</title>
+<script src="xlsx.full.min.js"></script>
+<style>
+  :root{
+    --blue:#0b5fa5; --blue-dark:#083f6e; --green:#1a9e6b; --green-dark:#127a52;
+    --bg:#f2f6f9; --card:#ffffff; --border:#d7e2ea; --text:#1c2b36;
+    --muted:#5f7688; --danger:#c0392b; --amber:#b8860b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{background:linear-gradient(120deg,var(--blue) 0%,var(--blue-dark) 55%,var(--green-dark) 100%);color:#fff;padding:22px 28px;}
+  header h1{margin:0;font-size:22px;letter-spacing:.3px;}
+  header p{margin:4px 0 0;font-size:13px;opacity:.9;}
+  .wrap{max-width:1360px;margin:0 auto;padding:20px 24px 60px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:980px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(20,40,60,.04);}
+  .card h2{margin:0 0 14px;font-size:15px;color:var(--blue-dark);display:flex;align-items:center;gap:8px;}
+  .badge{display:inline-block;background:var(--green);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;margin-top:10px;}
+  label:first-child{margin-top:0;}
+  input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13.5px;color:var(--text);background:#fbfdff;
+  }
+  textarea{resize:vertical;min-height:50px;font-family:inherit;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 14px;}
+  button{cursor:pointer;border:none;border-radius:7px;padding:10px 16px;font-size:13.5px;font-weight:600;transition:.15s;}
+  .btn-primary{background:var(--green);color:#fff;}
+  .btn-primary:hover{background:var(--green-dark);}
+  .btn-secondary{background:var(--blue);color:#fff;}
+  .btn-secondary:hover{background:var(--blue-dark);}
+  .btn-outline{background:#fff;border:1px solid var(--border) !important;color:var(--blue-dark);}
+  .btn-outline:hover{background:#eef4fa;}
+  .btn-danger{background:#fff;border:1px solid #f0c4bd !important;color:var(--danger);}
+  .btn-danger:hover{background:#fdeeec;}
+  .search-bar{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .search-bar input{flex:1;min-width:180px;}
+  .search-bar select{max-width:220px;}
+  .store-table-wrap{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:8px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:7px 9px;border-bottom:1px solid #eef2f5;text-align:left;white-space:nowrap;}
+  th{position:sticky;top:0;background:#eef4fa;color:var(--blue-dark);font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;z-index:1;}
+  td.alamat-cell,td.nama-cell{white-space:normal;min-width:200px;}
+  td.qty-cell input{width:70px;padding:4px 6px;}
+  tr.selected{background:#eafaf1;}
+  .summary-bar{display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:13px;}
+  .summary-bar b{color:var(--blue-dark);font-size:16px;}
+  .summary-pill{background:#eef4fa;border-radius:8px;padding:8px 14px;}
+  .tag-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:780px){.tag-preview-grid{grid-template-columns:1fr;}}
+  .tag-box{border:1.5px solid #333;border-radius:2px;padding:0;font-size:12.5px;overflow:hidden;background:#fff;}
+  .tag-box .tag-head{display:flex;justify-content:flex-end;padding:4px 8px;border-bottom:1px solid #333;font-weight:700;background:#f7f9fb;}
+  .tag-box table{font-size:12.5px;}
+  .tag-box td{border:none;padding:4px 8px;white-space:normal;}
+  .tag-box td.k{width:38%;font-weight:700;color:#111;}
+  .tag-box td.sep{width:6px;}
+  .tag-box tr.gap td{padding:0;height:6px;}
+  .empty-hint{color:var(--muted);font-size:13px;text-align:center;padding:30px 10px;}
+  .history-table td,.history-table th{white-space:normal;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:20px;}
+  .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  .small-note{font-size:11.5px;color:var(--muted);margin-top:6px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#eef4fa;border-radius:20px;padding:4px 10px;font-size:12px;margin:2px 4px 2px 0;}
+  .chip button{background:none;border:none;color:var(--danger);font-weight:800;cursor:pointer;padding:0;font-size:13px;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{position:absolute;left:0;top:0;width:100%;}
+    .tag-preview-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ERA-EXPRESS <span style="font-weight:400;font-size:14px;opacity:.85;">— Form Otomatis Pengiriman 21 Express</span></h1>
+  <p>Region 5 · Pilih toko tujuan, isi detail barang, generate Form &amp; Tag Alamat dalam hitungan klik.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="grid">
+    <!-- SENDER -->
+    <div class="card">
+      <h2>📦 Data Pengirim (Vendor)</h2>
+      <div class="row2">
+        <div>
+          <label>PT / Nama Vendor</label>
+          <input type="text" id="f_pt" value="PT. ERAFONE ARTHA RETAILINDO">
+        </div>
+        <div>
+          <label>Kode Account</label>
+          <input type="text" id="f_kodeAccount" value="E052 32-JKT">
+        </div>
+      </div>
+      <label>Lokasi Jemput (Alamat Gudang/Kantor)</label>
+      <textarea id="f_lokasiJemput">Menara Citicon Lt. 7, Jl. Letjen S. Parman No.Kav 72, RT.4/RW.3, Slipi, Kec. Palmerah, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11410</textarea>
+      <div class="row2">
+        <div>
+          <label>Nama Pengirim (PIC Pickup)</label>
+          <input type="text" id="f_pengirimNama" value="Ghesang">
+        </div>
+        <div>
+          <label>No. HP Pengirim</label>
+          <input type="text" id="f_pengirimHp" value="0813-8209-7446">
+        </div>
+      </div>
+      <label>PIC (untuk Tag Alamat)</label>
+      <input type="text" id="f_pic" value="Ghesang (VMD Assistent Manager RMO Region 5)">
+    </div>
+
+    <!-- SHIPMENT -->
+    <div class="card">
+      <h2>🚚 Detail Pengiriman</h2>
+      <div class="row2">
+        <div>
+          <label>Tanggal Request</label>
+          <input type="date" id="f_tglRequest">
+        </div>
+        <div>
+          <label>Tanggal Pick Up</label>
+          <input type="date" id="f_tglPickup">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Jam Pick Up</label>
+          <input type="time" id="f_jamPickup" value="13:00">
+        </div>
+        <div>
+          <label>Service</label>
+          <select id="f_service">
+            <option>Darat</option>
+            <option>Udara</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Jenis Barang</label>
+          <select id="f_jenisBarang">
+            <option>Hanging Mobile</option>
+            <option>Flyer</option>
+            <option>Spanduk</option>
+            <option>Signboard</option>
+            <option>Umbul-Umbul</option>
+            <option>Sticker Bebas Tukar</option>
+            <option value="__custom">Lainnya…</option>
+          </select>
+          <input type="text" id="f_jenisBarangCustom" placeholder="Tulis jenis barang" style="margin-top:6px;display:none;">
+        </div>
+        <div>
+          <label>Packing Kayu</label>
+          <select id="f_packingKayu">
+            <option>TIDAK</option>
+            <option>YA</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Qty per Toko (default)</label>
+          <input type="number" id="f_qtyDefault" value="6" min="1">
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn-outline" style="width:100%" onclick="applyQtyToAll()">Terapkan Qty ke Semua Toko Terpilih</button>
+        </div>
+      </div>
+      <p class="small-note">Nama Vendor pada Tag Alamat otomatis mengikuti singkatan Lokasi Jemput. Field ini dapat diedit ulang di preview bila diperlukan.</p>
+    </div>
+  </div>
+
+  <!-- STORE PICKER -->
+  <div class="card">
+    <h2>🏬 Pilih Toko Tujuan <span class="badge" id="countBadge">0 dipilih</span></h2>
+    <div class="search-bar">
+      <input type="text" id="searchBox" placeholder="Cari nama toko / kode SAP / kota…" oninput="renderStoreTable()">
+      <select id="kotaFilter" onchange="renderStoreTable()">
+        <option value="">Semua Kota</option>
+      </select>
+      <select id="formatFilter" onchange="renderStoreTable()">
+        <option value="">Semua Format Toko</option>
+      </select>
+      <button class="btn-outline" onclick="selectAllFiltered(true)">Pilih Semua (hasil filter)</button>
+      <button class="btn-outline" onclick="selectAllFiltered(false)">Hapus Semua (hasil filter)</button>
+    </div>
+    <div class="store-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px;"></th>
+            <th>Kode</th>
+            <th>Nama Toko</th>
+            <th>Kota</th>
+            <th>Format</th>
+            <th>UP</th>
+            <th>Kontak</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="storeTableBody"></tbody>
+      </table>
+    </div>
+    <div class="summary-bar">
+      <div class="summary-pill">Toko terpilih: <b id="sumStores">0</b></div>
+      <div class="summary-pill">Total Qty: <b id="sumQty">0</b></div>
+      <div class="summary-pill">Kota tercakup: <b id="sumKota">0</b></div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="card">
+    <h2>⚡ Generate &amp; Export</h2>
+    <div class="toolbar">
+      <button class="btn-primary" onclick="generatePreview()">🔍 Generate Preview</button>
+      <button class="btn-secondary" onclick="exportExcel()">📊 Export ke Excel (.xlsx)</button>
+      <button class="btn-outline" onclick="printLabels()">🖨️ Print Tag Alamat</button>
+      <button class="btn-danger" onclick="resetForm()">↺ Reset Pilihan</button>
+    </div>
+    <p class="small-note">Export Excel menghasilkan 3 sheet: <b>FORM</b> (form request pickup ke 21 Express), <b>TAG ALAMAT</b> (label tujuan per toko, 2 kolom seperti template asli), dan <b>TOKO TERPILIH</b> (rekap toko untuk kurir/driver). Setiap export otomatis tercatat di Riwayat Pengiriman.</p>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card" id="previewCard" style="display:none;">
+    <h2>📋 Preview Tag Alamat <span class="badge" id="refBadge"></span></h2>
+    <div id="printArea">
+      <div class="tag-preview-grid" id="tagPreviewGrid"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card">
+    <div class="flex-between">
+      <h2 style="margin:0;">🕒 Riwayat Pengiriman</h2>
+      <div>
+        <button class="btn-outline" onclick="exportHistoryCsv()">Export CSV</button>
+        <button class="btn-danger" onclick="clearHistory()">Hapus Riwayat</button>
+      </div>
+    </div>
+    <div class="store-table-wrap" style="margin-top:12px;">
+      <table class="history-table">
+        <thead>
+          <tr><th>No Referensi</th><th>Tanggal</th><th>Jenis Barang</th><th>Jml Toko</th><th>Total Qty</th><th>Kota Tercakup</th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>ERA-EXPRESS · Dibuat berdasarkan template Request Pick Up 21 Express, Region 5 · Data toko Erafone: 121 outlet (per September 2026)</footer>
+
+<script>
+const STORES = [{"kode": "E396", "nama": "ERAFONE ANDMORE RUKO ITC ROXY MAS", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "PANJI ARSY ARYA DILLAH", "kontak": "+62 887-0770-0830", "alamat": "Kompleks ITC Roxy Mas Jl. KH. Hasyim Ashari No.125, Blok C2 No 4-5, RT.17/RW.06 Kel. Cideng, Kec. Gambir, Jakarta Pusat 10150", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E096", "nama": "ERAFONE 2 ITC ROXY MAS", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "ITC Roxy Mas Lantai 2 No. 85, Jl. Kh Hasyim Ashari No.125, RT.12/RW.8, Cideng, Kecamatan Gambir, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10150", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E037", "nama": "ERAFONE GAJAH MADA PLAZA (ERAFONE LIPPO ICON GAJAH MADA)", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "Adi Hasan Ashari", "kontak": "8161997001", "alamat": "Lippo Icon Gajah Mada Lantai 2 #65, Jl. Gajah Mada No.19-26, RT.2/RW.1, Petojo Utara, Kecamatan Gambir, Daerah Khusus Ibukota Jakarta 10130", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E216", "nama": "ERAFONE SENAYAN PARK", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "Senayan Park Mall, Jln. Gerbang Pemuda No. 3 RT. 1 RW. 3, Gelora Kec. Tanah Abang Jakarta Pusat 10270", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E281", "nama": "ERAFONE 3.0 SENAYAN CITY", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "Syafri", "kontak": "87877602555", "alamat": "Senayan City Lantai 4 Lot 19 No. 37-39, Jl. Asia Afrika No.19, RW.3, Gelora, Kecamatan Tanah Abang, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10270", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E678", "nama": "ERAFONE MULTIBRAND BENDUNGAN HILIR", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "(021) 2528112", "alamat": "Jl. Bendungan Hilir Raya No. 12B 02/04 Kel. Bendungan Hilir Kec. Tanah Abang", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "F073", "nama": "ERAFONE 2.5 AGORA MALL", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "021-40127048", "alamat": "JL.M.H.THAMRIN RT.9/RW.5,KB KECAMATAN TANAH ABANG,KOTA JAKARTA PUSAT,DAERAH KHUSUS IBUKOTA JAKARTA", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E113", "nama": "ERAFONE GRAND INDONESIA", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "021-23581328", "alamat": "Grand Indonesia Lt 3 East Mall, Jl. M.H. Thamrin No.1, Menteng, Kec. Menteng, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10310", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E047", "nama": "ERAFONE 1 ITC CEMPAKA MAS", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "021 42901379", "alamat": "ITC Cempaka Mas Lt.4 Blok L No. 612-613 Jl. Cemp. Mas Tim. No.586, RW.8, Sumur Batu, Kec. Kemayoran, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10640", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E038", "nama": "ERAFONE MAL ATRIUM SENEN (ERAFONE MILLENIUM MALL)", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "021 - 34832347", "alamat": "Millenium Mall, Lantai LG 59 B, Jl. Senen Raya No.135, RW.2, Senen, Kec. Senen, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10410", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E137", "nama": "ERAFONE GREEN PRAMUKA SQUARE", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "Rizky Setyadi", "kontak": "87872410524", "alamat": "Mall Green Pramuka Lantai LG-6 Jl. Rw. Jaya No.49, RT.12/RW.6, Rawasari, Kec. Cemp. Putih, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10570 Erafone, Address", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E408", "nama": "ERAFONE FRANCHISE RUKO SUMUR BATU", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "Ari Ardiansyah", "kontak": "81617936969", "alamat": "Jl. Sumur Batu Raya, RT.2/RW.2, Sumur Batu, Kec. Kemayoran, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10640", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E414", "nama": "ERAFONE RUKO PERCETAKAN NEGARA", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "Edy Putra Riansyah", "kontak": "87777577135", "alamat": "Jl Percetakan Negara No 52 D Rt 06 Rw 01. Kelurahan rawasari Kec Cempaka Putih Jakarta Pusat 10570", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E663", "nama": "ERAFONE RUKO GARUDA KEMAYORAN", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "Jl Garuda no 57 Rt 001 Rw 005 , Kelurahan Gunung Sahari , Kecamatan Kemayoran , Jakarta Pusat", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E732", "nama": "ERAFONE RUKO SABANG", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "Jl. H. Agus Salim No.48A, RT.2/RW.1, Kb. Sirih, kec menteng Jakpus 10340", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M212", "nama": "ERAFONE AND MORE RAWASARI", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "JL. Rawasari Selatan Komp. BPKP No.25, RT 012 / RW.09 Kel Rawasari Kec. Cempaka Putih Jakarta Pusat 10570", "format": "Erafone & More", "status": "Aktif"}, {"kode": "F080", "nama": "ERAFONE K MALL AT MENARA JAKARTA", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "Jl. H. Benyamin Sueb No.10, Gunung Sahari Selatan, Kemayoran, Jakarta Utara, DKI Jakarta 14410", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E898", "nama": "ERAFONE MB SAMANHUDI", "region": "REGION 5", "kota": "JAKARTA PUSAT", "up": "-", "kontak": "-", "alamat": "Jl. Samanhudi No 46 Rt 1/ Rw 7 Ps. Baru Kec Sawah Besar Jakarta Pusat 10710", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E027", "nama": "ERAFONE DAAN MOGOT MALL", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "021-541817", "alamat": "Mall Matahari Daan Mogot Lantai 1 No. 24, Jalan Tampak Siring 1 8 12, RT.8/RW.12, Kalideres, Kec. Kalideres, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11840", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E215", "nama": "ERAFONE GREEN SEDAYU MALL", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Mohamad Roy Rojiani", "kontak": "81295221353", "alamat": "Mall Green Sedayu Lantai 1 No. FF-01B, Jl. Taman Palem Lestari Blok B13 No. 1 RT 7/RW 8, Cengkareng, Jakarta Barat 11730", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M068", "nama": "ERAFONE AND MORE KAMAL RAYA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "021-5239-1560", "alamat": "Jl. Kamal Raya No.20, RT.8/RW.9, Cengkareng Bar., Kecamatan Cengkareng, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11730", "format": "Erafone & More", "status": "Aktif"}, {"kode": "E233", "nama": "ERAFONE RUKO TAMAN SURYA JAKBA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Taman Surya 3 9-15, RT.9/RW.15, Tegal Alur, Kec. Kalideres, Kota Jakarta Barat", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E312", "nama": "ERAFONE KRESEK KOSAMBI", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Kresek II No.8-A, RT.01/RW.12, Duri Kosambi, Kecamatan Cengkareng, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11750", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E381", "nama": "ERAFONE RUKO PETA BARAT JAKBAR", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Jenal Aripin", "kontak": "85693674875", "alamat": "Jl. Peta Barat RT. 01 RW. 07 Kel. Kalideres Kec. Kalideres, Jakarta Barat 11840", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E453", "nama": "ERAFONE RUKO DURI KOSAMBI", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Raya Duri Kosambi No 32F, RT 1/ RW 7, Duri Kosambi, Cengkareng, Jakarta Barat 11750", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E960", "nama": "ERAFONE MB MENCENG RAYA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "JL. Menceng Raya 26-18 RT 12 RW 06, Tegal Alur, Kalideres, Jakarta Barat 11820", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E992", "nama": "ERAFONE 2.5 KAPUK CENGKARENG", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Rukan Paris Golf Lake Residence Blok B No. 29 RT 19 RW 14, Kel. Cengkareng Timur, Kec. Cengkareng, Jakarta Barat 11730", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E875", "nama": "ERAFONE MB POS PENGUMBEN", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "HAMID SANUSI", "kontak": "85771810996", "alamat": "Barat, Jl. Raya Pos Pengumben No.1, RW.5, Klp. Dua, Kec. Kb. Jeruk, Daerah Khusus Ibukota Jakarta 11550", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E465", "nama": "ERAFONE RUKO KEBAYORAN LAMA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Raya Kebayoran Lama No. 17 RT.007 RW.002 Kel. Sukabumi Selatan Kec. Kebon Jeruk, Jakarta Barat 11560", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E028", "nama": "ERAFONE MAL PURI INDAH", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Mukromin", "kontak": "87885827979", "alamat": "Puri Indah Mall Lantai 2, Jl. Puri Agung, RT.1/RW.2, Kembangan Sel., Kec. Kembangan, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11610", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E029", "nama": "ERAFONE PX PAVILION ST MORITS", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Arif Budiyanto", "kontak": "85781551164", "alamat": "Lippo Mall Puri Lantai 1 No. 71-72, Jl Kembangan, RT.3/RW.2, Kembangan Sel., Kec. Kembangan, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11610", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E322", "nama": "ERAFONE RUKO MERUYA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Meruya Utara No 22 ,RT 18/04 ,Kelurahan Meruya Utara ,Kecamatan Kembangan ,Kota Jakarta Barat", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E514", "nama": "ERAFONE FRANCHISE RUKO MERUYA SELATAN", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl Raya Meruya Selatan No 36B, RT 7 RW 2 Kel.Meruya selatan Kec.Kembangan Jakarta Barat, 11610", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E679", "nama": "ERAFONE MULTIBRAND JOGLO RAYA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "021 73471725", "alamat": "JL Dokter Suetomo ,kembangan ,jakarta barat", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E582", "nama": "ERAFONE MB SRENGSENG", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Andro Noca Jaya Pratama", "kontak": "81808592717", "alamat": "Jl. Srengseng Raya No.1, RT.10/RW.3, Srengseng, Kembangan, Jakarta Barat, Jakarta 11630", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E942", "nama": "ERAFONE KEMBANGAN UTARA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Kembangan Utara No. 101A RT 02 RT 08, Kembangan Utara, Kembangan, Jakarta Barat 11610", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E616", "nama": "ERAFONE MERUYA ILIR", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "JL. Meruya Ilir Raya No. 41e, RT 1/RW 5, Kel. Meruya Utara, Kec. Kembangan, Jakarta Barat 11630", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M219", "nama": "ERAFONE AND MORE PURI INDAH MALL", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "RIKI NOVIANTO", "kontak": "8158033046", "alamat": "Puri Indah Mall 2 Lantai 1, Jl. Puri Agung, RT.1/RW.2, Kembangan Sel., Kec. Kembangan, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11610", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E172", "nama": "ERAFONE RUKO KEBON JERUK BINUS", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Damar Prayoga", "kontak": "81519091997", "alamat": "Jl. Rw. Belong No.35, RT.2/RW.15, Kb. Jeruk, Kec. Palmerah, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11480", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E593", "nama": "ERAFONE MANGGA BESAR", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Mohamad Iqbal", "kontak": "83877921925", "alamat": "Jl. Raya Mangga Besar No.67A, RW.2, Tangki, Kec. Taman Sari, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11180", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E508", "nama": "ERAFONE JEMBATAN LIMA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "021 - 6310978", "alamat": "Jl. KH. Moh. Mansyur No. 166 B RT.1/RW.9 Tanah Sereal, Kec. Tambora Jakarta Barat, DKI Jakarta Kode Pos 11270", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E164", "nama": "ERAFONE MAL TAMAN ANGGREK", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Huda Pratama", "kontak": "85778107109", "alamat": "Mall Taman Anggrek Lt. 3 No. E05,E06,E07 Jl. Letjen S. Parman St No.28, RT.12/RW.1, Tomang, Grogol petamburan, West Jakarta City, Jakarta 11440", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M091", "nama": "MEGASTORE CENTRAL PARK 3.0", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Damardika", "kontak": "87878080628", "alamat": "Mall Central Park, Jl. Letjen. S. Parman No.kav.28, RT.12/RW.6, Tj. Duren Sel., Kec. Grogol petamburan, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11470", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "E158", "nama": "ERAFONE MAL CIPUTRA JAKARTA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "021-5666845", "alamat": "Jl. Letjen S. Parman No.38, RT.11/RW.1, Tj. Duren Utara, Kec. Grogol petamburan, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11470", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E991", "nama": "ERAFONE 2.5 KEMANGGISAN UTAMA RAYA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Kemanggisan Utama Raya No.9J 10 6, RT.10/RW.6, Kemanggisan, Kec. Palmerah, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11480", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E986", "nama": "ERAFONE MB JEMBATAN BESI", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Jembatan Besi Raya, Jemb. Besi, Kec. Tambora, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11320", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "F134", "nama": "ERAFONE MAL CIPUTRA JAKARTA 2.5", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Mall Ciputra Lantai UG ,Jl. Letjen S. Parman, RT.11/RW.1, Tj. Duren Utara, Kec. Grogol petamburan, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11470", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E413", "nama": "ERAFONE RUKO GOLDEN GREEN KEDOYA", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Ruko Golden Green, Jl. Panjang ,Jl Kom. Green Garden No.2, Rt.2/Rw.7, Kedoya Utara, Kec. Kb. Jeruk , Kota Jakarta Barat , DKI Jakarta 11520", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E923", "nama": "ERAFONE MB JALAN PANJANG", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "-", "kontak": "-", "alamat": "Jl. Panjang No.5E, RW.11, Kb. Jeruk, Kec. Kb. Jeruk, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11530", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E943", "nama": "ERAFONE MB TAMAN RATU", "region": "REGION 5", "kota": "JAKARTA BARAT", "up": "Heri Putra", "kontak": "89693742010", "alamat": "Jl. Taman Ratu Indah Blk. BB1 No.3, RT.3/RW.11, Kedoya Utara Jl. Surya Wijaya 6-1, Blk. BB1 No.3, Daerah Khusus Ibukota Jakarta 11520", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M014", "nama": "MEGASTORE BINTARO X-CHANGE", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Akbari Permadika", "kontak": "81292867708", "alamat": "Mall Bintaro Xchange Lantai Ground Unit. 125-126, Boulevard Bintaro Jaya Blok O-2, Bintaro Jaya Sektor VII, Pd. Jaya, Pd. Aren, Kota Tangerang Selatan", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "F077", "nama": "ERAFONE BINTARO X-CHANGE II", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Danyel Shilton Panjaitan", "kontak": "81315944189", "alamat": "Mall Bintaro Xchange 2 Jl. Lkr. Jaya No.12 Pd. Jaya, Kec. Pd. Aren, Kota Tangerang Selatan, Banten 15220", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E612", "nama": "ERAFONE RUKO JOMBANG TANGSEL", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Jombang Raya No. 5abc, Pd. Aren Kota Tangerang Selatan, Banten 15226", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E160", "nama": "ERAFONE RUKO CEGER TANGERANG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Ceger Raya No 99, Ruko No 6-7, Jurang Mangu Barat, Kec. Pd. Aren, Kota Tangerang Selatan, Banten 15222", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E620", "nama": "ERAFONE 2.5 PAJAJARAN PAMULANG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Heru Bachtiar", "kontak": "83811921019", "alamat": "Jl. Pajajaran No.39, Pamulang Barat Kec. Pamulang Tangerang Selatan", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M104", "nama": "MEGASTORE RUKO REMPOA CIPUTAT", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Pahlawan No.02 RT.5/RW.3 kelurahan;Rempoa Kecamatan; Ciputat Timur", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "E321", "nama": "ERAFONE RUKO SUDIMARA CIPUTAT", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Jombang Raya No 21 RT/RW 02/02 Kelurahan Jombang, kecamatan Ciputat, Kota Tangerang Selatan, Banten 15414", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E704", "nama": "ERAFONE RUKO DEWANTARA CIPUTAT", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Ki Hajar Dewantara No.22, RT.1/RW.3, Ciputat, Kec. Ciputat, Kota Tangerang Selatan, Banten 15411", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E043", "nama": "ERAFONE PLAZA BINTARO JAYA", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Rama Prasetyo", "kontak": "81291059132", "alamat": "Plaza Bintaro Jaya Lantai 1 No. 12A Jl. Bintaro Utama Sektor 3-A, Pd. Karya, Pd. Aren, Kota Tangerang Selatan, Banten 15225", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E685", "nama": "ERAFONE MB PONDOK BETUNG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Ceger Raya No. 22 B , Kel. Pondok karya Kec. Pondok Aren , Kota Tangerang Selatan , Banten 15225", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E391", "nama": "ERAFONE RUKO WR SUPRATMAN CIPUTAT", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Heru Bachtiar", "kontak": "83811921019", "alamat": "Jl. WR Supratman No 124 kecamatan. Kecamatan Ciputat Timur. keluraha Cempaka Putih. Banten 15412", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E084", "nama": "ERAFONE 1 SUPERMALL KARAWACI", "region": "REGION 5", "kota": "TANGERANG", "up": "Rama Prasetyo", "kontak": "81291059132", "alamat": "Supermall Karawaci Lantai LG No.3A-6A E-CENTER, Jl. Boulevard Diponegoro No.105, Bencongan, Kec. Klp. Dua, Kota Tangerang, Banten 15811", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M163", "nama": "ERAFONE AND MORE SERPONG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. MH. Thamrin No.7, Pakualam, Kec. Serpong Utara, Kota Tangerang Selatan, Banten 15143", "format": "Erafone & More", "status": "Aktif"}, {"kode": "E777", "nama": "ERAFONE MB CIHUNI PAGEDANGAN (ERAFONE CIHUNI GADING SERPONG)", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "021-59993809", "alamat": "ruko North sorrento square No.1 Jl.Ir sukarno cihuni,kec pagedangan,kabupaten Tangerang ,Banten 15332", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E873", "nama": "ERAFONE MB LEGOK", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "021-59993587", "alamat": "Jln. Raya PLP Curug No. 95 Kec. Legok, Kab. Tangerang Banten 15820", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E874", "nama": "ERAFONE MULTIBRAND DASANA INDAH", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "+622159990668", "alamat": "Jln. Raya Dasana Indah Blok SA1 No. 11, Bojong Nangka, Kec. Kelapa Dua Tangerang, Banten 15810", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E813", "nama": "ERAFONE MULTIBRAND SERPONG GARDEN CISAUK", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Raya Cisauk Lapan Jl. Ruko Serpong Garden ruko 3 No.21, Cibogo, Kec. Cisauk, Kabupaten Tangerang, Banten 15341", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M019", "nama": "MEGASTORE SUMMARECON MAL SERPONG", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "021-54213507", "alamat": "Summarecon Mall Serpong Lantai 2F No. 17A, Jalan Gading Serpong Boulevard No.1, No.2 F, Pakulonan Bar., Kec. Klp. Dua, Tangerang, Banten 15810", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "M013", "nama": "MEGASTORE SUPERMAL KARAWACI", "region": "REGION 5", "kota": "TANGERANG", "up": "Rudi Herdiyanto", "kontak": "+62 877-7083-6816", "alamat": "Supermal Karawaci Lantai 1 Unit FF 51-52 105. Jl. Boulevard Diponegoro No.105, Bencongan, Kec. Klp. Dua, Kota Tangerang, Banten 15811", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "M222", "nama": "ERAFONE AND MORE EASTVARA MALL", "region": "REGION 5", "kota": "TANGERANG", "up": "Reno Dharmawan", "kontak": "87808367901", "alamat": "Eastvara Mall, Jl. BSD Boulevard Utara, Cijantra, Kec. Pagedangan, Kabupaten Tangerang, Banten 15854", "format": "Erafone & More", "status": "Aktif"}, {"kode": "E369", "nama": "ERAFONE FRANCHISE RUKO BOROBUDUR RAYA", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Borobudur Raya Kel, Cibodas Baru, Kec.Cibodas Kota Tangerang", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E370", "nama": "ERAFONE FRANCHISE RUKO BERINGIN KARAWACI", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Beringin Raya Kel. Nusa Jaya, Kec. Tangerang Kota Tangerang", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E221", "nama": "ERAFONE AND MORE CIPUTRA CITRARAYA TANGERANG", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Citra Raya Boulevard No.38 Mall Citra Lt. 2 unit C 19-12, Ciakar, Kec. Panongan, Kabupaten Tangerang, Banten 15710", "format": "Erafone & More", "status": "Aktif"}, {"kode": "F058", "nama": "ERAFONE 2.5 TELAGA BESTARI", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Taman Palem Raya No.12, Wana Kerta, kec sindang jaya1, Kabupaten Tangerang, Banten 15560", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "M048", "nama": "MEGASTORE RUKO CIKUPA", "region": "REGION 5", "kota": "TANGERANG", "up": "Dede Dermawan", "kontak": "85285954784", "alamat": "Ruko Cikupa, Jl. Raya Serang Balaraja, Sukanagara, Kec. Cikupa, Tangerang, Banten 15710", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "M167", "nama": "ERAFONE AND MORE TELUK NAGA", "region": "REGION 5", "kota": "TANGERANG", "up": "Jatonggo Silitonga", "kontak": "85782286690", "alamat": "Kampung Melayu Barat RT 01/RW 02 No. II-C, Kp. Melayu Barat, Kec. Teluknaga, Tangerang Kabupaten, Banten 15510", "format": "Erafone & More", "status": "Aktif"}, {"kode": "E627", "nama": "ERAFONE RUKO CISOKA", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Raya Cisoka Adiyasa No .35-36 Rt 001/Rw/001 Kp Lukun Sukatani ,Kec Cisoka Kabupaten Tangerang Banten", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E253", "nama": "ERAFONE RUKO CURUG TANGERANG", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Raya PLP Curug No.16, Suka Bakti, Kec. Curug, Tangerang, Banten 15810", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E787", "nama": "ERAFONE MB TIGARAKSA", "region": "REGION 5", "kota": "TANGERANG", "up": "Nana Pratama", "kontak": "85711100857", "alamat": "JL. Syeh Mubarok Matagara No.9 RT 001/004, TIGARAKSA TANGERANG Banten 15720", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E848", "nama": "ERAFONE PASAR KEMIS", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "JL.Taman Sukamatri Raya A/12 Kel Sukamatri Kec. Pasar Kemis Kab.Tangerang 15560 Banten", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E812", "nama": "ERAFONE RUKO KUTABUMI", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Raya Regency II Kel. Kuta Jaya Kec. Ps. Kemis Kab. Tangerang 15560", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E201", "nama": "ERAFONE RUKO KRESEK BALARAJA", "region": "REGION 5", "kota": "TANGERANG", "up": "Mochamad Ryan Krisdiana", "kontak": "82124749133", "alamat": "Jl. Raya Kresek, Saga, Kec. Balaraja, Tangerang, Banten 15610", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E744", "nama": "ERAFONE RUKO RAJEG TANGERANG", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Raya Ps. Kemis, Mekarsari Kel. Mekarsari Kec. Rajeg Kab. Tangerang Banten 15540.", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "F066", "nama": "ERAFONE 2.5 SEPATAN", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Raya Mauk Jl. Tangerang Golden City No.3", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "F079", "nama": "ERAFONE 2.5 GRAND BATAVIA", "region": "REGION 5", "kota": "KABUPATEN TANGERANG", "up": "Oktavian Nurrahmat", "kontak": "85932222992", "alamat": "Jalan Raya Grand Batavia RT02/RW019 Kel.Sindangsari Kec.Pasar Kemis Kab.Tangerang,Banten 15560", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "M021", "nama": "MEGASTORE RUKO CILEDUG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Fahruk Azhara", "kontak": "85822017978", "alamat": "Jl. Ciledug Raya No. 30 RT.006/RW.002, Petukangan Utara, Kec. Pesanggrahan, Kota Tangerang, Banten 15156", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "E231", "nama": "ERAFONE RUKO COKROAMINOTO CILEDUG", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jln. HOS Cokroaminoto No. 29 RT. 002 RW. 004, Karang Timur, Karang Tengah, Ciledug, Tangerang", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "F003", "nama": "Erafone Ciledug 2.5 Raya", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl Ciledug Raya No 9 RT/RW 001/009, Larangan Indah, Kec Larangan, Kota Tangerang Banten 15154", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "G546", "nama": "ERABLUE CILEDUG RAYA TANGERANG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Ciledug Raya No. 30 RT.006/RW.002, Petukangan Utara, Kec. Pesanggrahan, Kota Tangerang, Banten 15156", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M093", "nama": "MEGASTORE RUKO CIPONDOH TANGERANG", "region": "REGION 5", "kota": "TANGERANG", "up": "Cukat Yoga Aditya", "kontak": "89526719552", "alamat": "Jl KH Hasyim Asyhari RT003/RW003 No. 67B Cipondoh Tangerang", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "E290", "nama": "ERAFONE FRANCHISE RUKO PORIS", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jalan Poris indah Raya, Ruko Paradise Eksklusif. Poris Gaga Batu Ceper Tangerang", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E646", "nama": "ERAFONE BATU CEPER", "region": "REGION 5", "kota": "TANGERANG", "up": "Saiful Zuhdi", "kontak": "81284458691", "alamat": "Jl. Halim Perdana Kusuma, RT.002/RW.001, Jurumudi Baru, Kec. Batuceper, Kota Tangerang, Banten 15122", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E119", "nama": "ERAFONE TANGERANG CITY MALL", "region": "REGION 5", "kota": "TANGERANG", "up": "Mega Nurhatifah", "kontak": "81284456745", "alamat": "Tangerang City Mall Lantai LG, Jl. Jenderal Sudirman No.1, RT.001/RW.005, Babakan, Kec. Tangerang, Kota Tangerang, Banten 15117", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E696", "nama": "ERAFONE MB RASUNA SAID", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "JL.HR Rasuna Said RT01/RW 02 Pakojan, kec.Pinang, Kota Tangerang, Banten 15142", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "M176", "nama": "ERAFONE AND MORE KISAMAUN", "region": "REGION 5", "kota": "TANGERANG", "up": "Muammar Alfis", "kontak": "+62 812 1240 0080", "alamat": "Jl Kisamaun No 89G RT/RW 002/007 Kel. Sukasari Kec. Tangerang Kota Tangerang", "format": "Erafone & More", "status": "Aktif"}, {"kode": "E422", "nama": "ERAFONE RUKO M TOHA TANGERANG", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "-", "alamat": "Jl. Moh. Toha. RT 001/Rw.008 Pabuaran Tumpeng, Kec Karawaci, Kota Tangerang, 15114", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M061", "nama": "MEGASTORE RUKO JATIUWUNG", "region": "REGION 5", "kota": "TANGERANG", "up": "Santo", "kontak": "85813046313", "alamat": "Jl. Gatot Subroto No. A1-A2 RT.001/RW.4, Sangiang Jaya, Kec. Periuk, Kota Tangerang, Banten 15134", "format": "Erafone Megastore", "status": "Aktif"}, {"kode": "E684", "nama": "ERAFONE RUKO SANGIANG TANGERANG", "region": "REGION 5", "kota": "TANGERANG", "up": "Denny Sanjaya", "kontak": "87880208886", "alamat": "Jl. Raya Villa Tangerang Indah RT.003/RW.012 Gebang Raya Kec. Periuk Tangerang 15132", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E150", "nama": "ERAFONE CILEGON CENTER MALL", "region": "REGION 5", "kota": "CILEGON", "up": "Arif Abdurahman Aziz", "kontak": "81287922331", "alamat": "Cilegon Center Mall Lt 1 No. 14 , Jl. Ahmad Yani No. 11 Sukmajaya, Kec. Jombang, Kota Cilegon, Banten 42416", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E081", "nama": "ERAFONE MALL OF SERANG", "region": "REGION 5", "kota": "SERANG", "up": "Andi Saputra", "kontak": "87875027979", "alamat": "Mall of Serang Lantai 1 No. 20, Jl. Akses Tol Serang Tim., Panancangan, Kec. Cipocok Jaya, Kota Serang, Banten 42124", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E209", "nama": "ERAFONE RUKO AHMAD YANI SERANG", "region": "REGION 5", "kota": "SERANG", "up": "Depih Harlan", "kontak": "83866359264", "alamat": "Jl. Jendral Ahmad Yani No.104 RT RW 001/002 Sumurpecung, Kec. Serang, Kota Serang, Banten 42117", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E194", "nama": "ERAFONE RUKO RANGKASBITUNG", "region": "REGION 5", "kota": "RANGKASBITUNG", "up": "Fardan Ega Pirmansyah", "kontak": "85694929109", "alamat": "Ruko Multatuli Rangkas Bitung, Jl. Multatuli No.95, Muara Ciujung Bar., Kec. Rangkasbitung, Kabupaten Lebak, Banten 42312", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E308", "nama": "ERAFONE RUKO MAYOR SAFEI SERANG", "region": "REGION 5", "kota": "SERANG", "up": "-", "kontak": "-", "alamat": "Jalan Mayor Safei Serang , Kel Lontarbaru , Kec Serang , Kota Serang Banten Kode POS 42115", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E320", "nama": "ERAFONE RUKO PANDEGLANG BANTEN", "region": "REGION 5", "kota": "PANDEGLANG", "up": "TB.HANIFAN", "kontak": "85921222664", "alamat": "Jl. Serang Pandeglang, Kel. Pandeglang Kec. Pandeglang, Kab. Pandeglang, Banten kode Pos 42211", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E589", "nama": "ERAFONE RUKO PANIMBANG PANDEGLANG", "region": "REGION 5", "kota": "PANDEGLANG", "up": "-", "kontak": "-", "alamat": "JL. Raya Tanjung - Panimbang, Kp. Padahayu RT 01/04 Ds. Panimbang jaya, Kec. Panimbang Kab. Pandeglang 42281", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E499", "nama": "ERAFONE LABUAN PANDEGLANG", "region": "REGION 5", "kota": "PANDEGLANG", "up": "-", "kontak": "-", "alamat": "Jl. Jend. Sudirman No. 99, Muncang Labuan, Kec. Labuang, Pandeglang, Banten 42264", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E544", "nama": "ERAFONE RUKO MULTIBRAND CILEGON", "region": "REGION 5", "kota": "CILEGON", "up": "Ahmad Khusnul", "kontak": "895336274142", "alamat": "Jl. Simpang Tiga No.13 RT.06 RW.01 Kel. Ramanuju Kec. Purwakarta Cilegon, Banten 42411", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E821", "nama": "ERAFONE MB ANYER", "region": "REGION 5", "kota": "SERANG", "up": "-", "kontak": "0254-7960524", "alamat": "Jalan Raya Anyer Sirih Kec Anyer Kabupaten Serang Banten 42166", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E822", "nama": "ERAFONE MB KRAGILAN", "region": "REGION 5", "kota": "SERANG", "up": "-", "kontak": "0254-7901771", "alamat": "Jalan raya serang- KM 15, Kragilan, kec Kragilan,Kab Serang BANTEN 42184", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E833", "nama": "ERAFONE RANGKASBITUNG 2", "region": "REGION 5", "kota": "RANGKASBITUNG", "up": "-", "kontak": "-", "alamat": "JL. Sunan kalijaga No.325 Kp. Papanggo RT.01 RW.02 Kel. Cijoro Pasir Rangkasbitung", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E879", "nama": "ERAFONE MB CIPARE", "region": "REGION 5", "kota": "SERANG", "up": "-", "kontak": "0254-4078399", "alamat": "JL. Raya Pandeglang Sempu, Banten Girang RT.001 RW.017 Kel. Cipare Kec. Serang Kota Serang Banten", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "M027", "nama": "ERAFONE AND MORE CIPUTAT", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "Mochamad Helmi Alatas", "kontak": "85117769126", "alamat": "Jl. Dewi Sartika No.12 D, Cipayung, Kec. Ciputat, Kota Tangerang Selatan, Banten 15411", "format": "Erafone & More", "status": "Aktif"}, {"kode": "E191", "nama": "ERAFONE RUKO SURYA KENCANA PAMULANG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Surya Kencana No.60, Pamulang Bar., Kec. Pamulang, Kota Tangerang Selatan, Banten 15417", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "F022", "nama": "ERAFONE 2.5 PAMULANG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jalan siliwangi no. 2 pondok benda, kec. Pamulang, Banten 15417", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E484", "nama": "ERAFONE SERPONG PARADISE WALK", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jalan Graha Raya Boulevard, Paku Jaya, Serpong Utara, Kota Tangerang Selatan, Banten 15220", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E087", "nama": "ERAFONE ITC BSD", "region": "REGION 5", "kota": "TANGERANG", "up": "-", "kontak": "021-5381354", "alamat": "BSD City, ITC BSD Lantai 3 D3A-6, Jl. Pahlawan Seribu, Lengkong Wetan, Tangerang, Kota Tangerang Selatan, Banten 15321", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E941", "nama": "ERAFONE MB RAYA SERPONG", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jalan Benda Permai Raya B8/8-B8/9, RT 001, RW 010,Kel/Desa Pondok Benda, Kecamatan Pamulang, Kota Tangerang Selatan, Provinsi Banten", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E586", "nama": "ERAFONE RUKO GRAHA RAYA", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Boulevard Graha Raya NO.B15, Paku Jaya, Kec. Serpong Utara, Kota Tangerang Selatan, Banten 15220", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E834", "nama": "ERAFONE KEDAUNG TANGSEL", "region": "REGION 5", "kota": "TANGERANG SELATAN", "up": "-", "kontak": "-", "alamat": "Jl. Pondok Cabe Raya No.9, Kec. Pamulang, Kota Tangerang Selatan, Banten 15418", "format": "Erafone Franchise", "status": "Aktif"}, {"kode": "E082", "nama": "ERAFONE LIVING WORLD ALAM SUTERA", "region": "REGION 5", "kota": "TANGERANG", "up": "Indra Setiawan", "kontak": "81519578723", "alamat": "Living World Alam Sutera 1st floor No.30B Jalan Alam Sutera Boulevard Kav. 21, Pakulonan, Kec. Serpong Utara, Kota Tangerang Selatan, Banten 15325", "format": "Erafone Multibrand", "status": "Aktif"}, {"kode": "E088", "nama": "ERAFONE AEON MAL BSD CITY", "region": "REGION 5", "kota": "TANGERANG", "up": "Gina Tania", "kontak": "85880148262", "alamat": "AEON Mal BSD City Lantai 3 LOT 3-15 Jl. Grand Boulevard BSD City Pagedangan, Kec. Pagedangan, Tangerang, Banten 15345", "format": "Erafone Multibrand", "status": "Aktif"}];
+
+let selected = {}; // kode -> qty
+
+function todayISO(offsetDays=0){
+  const d = new Date(); d.setDate(d.getDate()+offsetDays);
+  return d.toISOString().slice(0,10);
+}
+document.getElementById('f_tglRequest').value = todayISO(0);
+document.getElementById('f_tglPickup').value = todayISO(1);
+
+document.getElementById('f_jenisBarang').addEventListener('change', e=>{
+  document.getElementById('f_jenisBarangCustom').style.display = e.target.value==='__custom' ? 'block':'none';
+});
+
+function uniqueKota(){
+  return [...new Set(STORES.map(s=>s.kota))].sort();
+}
+function uniqueFormat(){
+  return [...new Set(STORES.map(s=>s.format).filter(Boolean))].sort();
+}
+(function initFilters(){
+  const kotaSel = document.getElementById('kotaFilter');
+  uniqueKota().forEach(k=>{
+    const o = document.createElement('option'); o.value=k; o.textContent=k; kotaSel.appendChild(o);
+  });
+  const fmtSel = document.getElementById('formatFilter');
+  uniqueFormat().forEach(f=>{
+    const o = document.createElement('option'); o.value=f; o.textContent=f; fmtSel.appendChild(o);
+  });
+})();
+
+function defaultQty(){ return parseInt(document.getElementById('f_qtyDefault').value)||1; }
+
+function filteredStores(){
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const kota = document.getElementById('kotaFilter').value;
+  const fmt = document.getElementById('formatFilter').value;
+  return STORES.filter(s=>{
+    if(kota && s.kota!==kota) return false;
+    if(fmt && s.format!==fmt) return false;
+    if(!q) return true;
+    return s.kode.toLowerCase().includes(q) || s.nama.toLowerCase().includes(q) || s.kota.toLowerCase().includes(q);
+  });
+}
+
+function renderStoreTable(){
+  const tbody = document.getElementById('storeTableBody');
+  tbody.innerHTML = '';
+  filteredStores().forEach(s=>{
+    const tr = document.createElement('tr');
+    const isSel = selected.hasOwnProperty(s.kode);
+    if(isSel) tr.classList.add('selected');
+    tr.innerHTML = `
+      <td><input type="checkbox" ${isSel?'checked':''} onchange="toggleStore('${s.kode}', this.checked)"></td>
+      <td>${s.kode}</td>
+      <td class="nama-cell">${s.nama}</td>
+      <td>${s.kota}</td>
+      <td>${s.format||'-'}</td>
+      <td>${s.up}</td>
+      <td>${s.kontak}</td>
+      <td class="qty-cell"><input type="number" min="1" value="${isSel?selected[s.kode]:defaultQty()}" onchange="setQty('${s.kode}', this.value)" ${isSel?'':'disabled'}></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateSummary();
+}
+
+function toggleStore(kode, checked){
+  if(checked){ selected[kode] = defaultQty(); }
+  else { delete selected[kode]; }
+  renderStoreTable();
+}
+function setQty(kode, val){
+  if(selected.hasOwnProperty(kode)) selected[kode] = parseInt(val)||1;
+  updateSummary();
+}
+function selectAllFiltered(on){
+  filteredStores().forEach(s=>{
+    if(on) selected[s.kode] = selected[s.kode] || defaultQty();
+    else delete selected[s.kode];
+  });
+  renderStoreTable();
+}
+function applyQtyToAll(){
+  const q = defaultQty();
+  Object.keys(selected).forEach(k=> selected[k]=q);
+  renderStoreTable();
+}
+function updateSummary(){
+  const kodes = Object.keys(selected);
+  const totalQty = kodes.reduce((a,k)=>a+(selected[k]||0),0);
+  const kotas = new Set(kodes.map(k=> STORES.find(s=>s.kode===k)?.kota));
+  document.getElementById('countBadge').textContent = kodes.length + ' dipilih';
+  document.getElementById('sumStores').textContent = kodes.length;
+  document.getElementById('sumQty').textContent = totalQty;
+  document.getElementById('sumKota').textContent = kotas.size;
+}
+
+function getJenisBarang(){
+  const sel = document.getElementById('f_jenisBarang');
+  if(sel.value==='__custom') return document.getElementById('f_jenisBarangCustom').value || 'Lainnya';
+  return sel.value;
+}
+
+function shortVendorName(){
+  const loc = document.getElementById('f_lokasiJemput').value;
+  return loc.split(',')[0].trim() ? ('Erajaya Digital ' + loc.split(',')[0].trim()) : 'Erajaya Digital';
+}
+
+let memRefCounter = {day:null, seq:0};
+function safeStorageGet(key, fallback){
+  try{ return localStorage.getItem(key) ?? fallback; }catch(e){ return fallback; }
+}
+function safeStorageSet(key, val){
+  try{ localStorage.setItem(key, val); return true; }catch(e){ return false; }
+}
+function nextRefNumber(){
+  const today = todayISO(0).replace(/-/g,'');
+  let store = JSON.parse(safeStorageGet('eraExpressRefCounter','{}'));
+  if(store.day !== today){ store = {day:today, seq:0}; }
+  store.seq += 1;
+  if(!safeStorageSet('eraExpressRefCounter', JSON.stringify(store))){
+    if(memRefCounter.day !== today){ memRefCounter = {day:today, seq:0}; }
+    memRefCounter.seq += 1;
+    store.seq = memRefCounter.seq;
+  }
+  return `EXP-${today}-${String(store.seq).padStart(4,'0')}`;
+}
+
+let lastBatch = null;
+
+function generatePreview(){
+  const kodes = Object.keys(selected);
+  if(kodes.length===0){ alert('Pilih minimal 1 toko terlebih dahulu.'); return; }
+  const ref = nextRefNumber();
+  const jenis = getJenisBarang();
+  const vendor = shortVendorName();
+  const tglReq = document.getElementById('f_tglRequest').value;
+  const stores = kodes.map(k=> STORES.find(s=>s.kode===k));
+
+  lastBatch = { ref, jenis, vendor, tglReq, stores, qty: selected };
+
+  const grid = document.getElementById('tagPreviewGrid');
+  grid.innerHTML = '';
+  stores.forEach((s,i)=>{
+    const box = document.createElement('div');
+    box.className = 'tag-box';
+    box.innerHTML = `
+      <div class="tag-head">NO : ${i+1}</div>
+      <table>
+        <tr><td class="k">RESI</td><td class="sep">:</td><td></td></tr>
+        <tr><td class="k">TANGGAL/BULAN</td><td class="sep">:</td><td>${formatTgl(tglReq)}</td></tr>
+        <tr><td class="k">NAMA VENDOR</td><td class="sep">:</td><td>${vendor}</td></tr>
+        <tr><td class="k">NAMA BARANG</td><td class="sep">:</td><td>${jenis}</td></tr>
+        <tr><td class="k">QTY</td><td class="sep">:</td><td>${selected[s.kode]}</td></tr>
+        <tr class="gap"><td></td><td></td><td></td></tr>
+        <tr><td class="k">ALOKASI TUJUAN</td><td class="sep">:</td><td>${s.kota}</td></tr>
+        <tr class="gap"><td></td><td></td><td></td></tr>
+        <tr><td class="k">KODE STORE</td><td class="sep">:</td><td>${s.kode}</td></tr>
+        <tr><td class="k">NAMA STORE</td><td class="sep">:</td><td>${s.nama}</td></tr>
+        <tr><td class="k">ALAMAT</td><td class="sep">:</td><td>${s.alamat}</td></tr>
+        <tr class="gap"><td></td><td></td><td></td></tr>
+        <tr><td class="k">UP</td><td class="sep">:</td><td>${s.up}</td></tr>
+        <tr><td class="k">KONTAK</td><td class="sep">:</td><td>${s.kontak}</td></tr>
+        <tr class="gap"><td></td><td></td><td></td></tr>
+        <tr><td class="k">PIC</td><td class="sep">:</td><td>${document.getElementById('f_pic').value}</td></tr>
+        <tr class="gap"><td></td><td></td><td></td></tr>
+        <tr><td class="k">KODE ACCOUNT</td><td class="sep">:</td><td>${document.getElementById('f_kodeAccount').value}</td></tr>
+      </table>
+    `;
+    grid.appendChild(box);
+  });
+  document.getElementById('previewCard').style.display = 'block';
+  document.getElementById('refBadge').textContent = ref;
+  document.getElementById('previewCard').scrollIntoView({behavior:'smooth'});
+}
+
+function formatTgl(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return `${d} ${bulan[parseInt(m)-1]} ${y}`;
+}
+
+function printLabels(){
+  if(!lastBatch){ generatePreview(); }
+  if(Object.keys(selected).length===0) return;
+  setTimeout(()=> window.print(), 150);
+}
+
+let memHistory = [];
+function saveHistory(batch, totalQty, kotaCount){
+  const key='eraExpressHistory';
+  const hist = JSON.parse(safeStorageGet(key,'[]'));
+  hist.unshift({
+    ref: batch.ref,
+    tanggal: batch.tglReq,
+    jenis: batch.jenis,
+    jmlToko: batch.stores.length,
+    totalQty: totalQty,
+    kota: kotaCount
+  });
+  if(!safeStorageSet(key, JSON.stringify(hist))){
+    memHistory = hist;
+  }
+  renderHistory();
+}
+
+function renderHistory(){
+  const raw = safeStorageGet('eraExpressHistory', null);
+  const hist = raw!==null ? JSON.parse(raw) : memHistory;
+  const body = document.getElementById('historyBody');
+  if(hist.length===0){
+    body.innerHTML = `<tr><td colspan="6" class="empty-hint">Belum ada riwayat pengiriman.</td></tr>`;
+    return;
+  }
+  body.innerHTML = hist.map(h=>`
+    <tr>
+      <td>${h.ref}</td>
+      <td>${formatTgl(h.tanggal)}</td>
+      <td>${h.jenis}</td>
+      <td>${h.jmlToko}</td>
+      <td>${h.totalQty}</td>
+      <td>${h.kota}</td>
+    </tr>`).join('');
+}
+function clearHistory(){
+  if(confirm('Hapus semua riwayat pengiriman dari perangkat ini?')){
+    try{ localStorage.removeItem('eraExpressHistory'); }catch(e){}
+    memHistory = [];
+    renderHistory();
+  }
+}
+function exportHistoryCsv(){
+  const raw = safeStorageGet('eraExpressHistory', null);
+  const hist = raw!==null ? JSON.parse(raw) : memHistory;
+  if(hist.length===0){ alert('Riwayat masih kosong.'); return; }
+  let csv = 'No Referensi,Tanggal,Jenis Barang,Jumlah Toko,Total Qty,Kota Tercakup\n';
+  hist.forEach(h=>{
+    csv += `${h.ref},${h.tanggal},${h.jenis},${h.jmlToko},${h.totalQty},${h.kota}\n`;
+  });
+  downloadBlob(csv, `riwayat-era-express-${todayISO(0)}.csv`, 'text/csv;charset=utf-8;');
+}
+function downloadBlob(content, filename, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportExcel(){
+  const kodes = Object.keys(selected);
+  if(kodes.length===0){ alert('Pilih minimal 1 toko terlebih dahulu.'); return; }
+  if(!lastBatch) generatePreview();
+
+  const ref = lastBatch.ref;
+  const jenis = lastBatch.jenis;
+  const vendor = lastBatch.vendor;
+  const tglReq = lastBatch.tglReq;
+  const tglPickup = document.getElementById('f_tglPickup').value;
+  const jamPickup = document.getElementById('f_jamPickup').value;
+  const stores = lastBatch.stores;
+  const totalQty = stores.reduce((a,s)=>a+(selected[s.kode]||0),0);
+  const kotaSet = new Set(stores.map(s=>s.kota));
+
+  const wb = XLSX.utils.book_new();
+
+  // --- SHEET 1: FORM ---
+  const formHeader = ['NO','KODE ACCOUNT','PT','LOKASI JEMPUT','TANGGAL REQ','TUJUAN','SERVICE','PENGIRIM','JENIS BARANG','QTY','PACKING KAYU','TANGGAL PICK UP'];
+  const formRow = [
+    1,
+    document.getElementById('f_kodeAccount').value,
+    document.getElementById('f_pt').value,
+    document.getElementById('f_lokasiJemput').value,
+    formatTgl(tglReq),
+    'Sesuai Tag Alamat',
+    document.getElementById('f_service').value,
+    document.getElementById('f_pengirimNama').value + '\n' + document.getElementById('f_pengirimHp').value,
+    jenis,
+    totalQty,
+    document.getElementById('f_packingKayu').value,
+    formatTgl(tglPickup) + '\n' + jamPickup
+  ];
+  const wsForm = XLSX.utils.aoa_to_sheet([formHeader, formRow]);
+  wsForm['!cols'] = [{wch:4},{wch:14},{wch:28},{wch:40},{wch:14},{wch:16},{wch:10},{wch:22},{wch:16},{wch:8},{wch:14},{wch:18}];
+  XLSX.utils.book_append_sheet(wb, wsForm, 'FORM');
+
+  // --- SHEET 2: TAG ALAMAT (2 tags per row block, like original template) ---
+  const tagRows = [];
+  const pic = document.getElementById('f_pic').value;
+  const kodeAccount = document.getElementById('f_kodeAccount').value;
+
+  function tagBlock(store, no){
+    const qty = selected[store.kode];
+    return [
+      ['RESI',':','', null,null,null,null,null,null,null,'NO :',no],
+      ['TANGGAL/BULAN',':',formatTgl(tglReq)],
+      ['NAMA VENDOR',':',vendor],
+      ['NAMA BARANG',':',jenis],
+      ['QTY',':',qty],
+      [],
+      ['ALOKASI TUJUAN',':',store.kota],
+      [],
+      ['KODE STORE',':',store.kode],
+      ['NAMA STORE',':',store.nama],
+      ['ALAMAT',':',store.alamat],
+      [],
+      [],
+      ['UP',':',store.up],
+      ['KONTAK',':',store.kontak],
+      [],
+      ['PIC',':',pic],
+      [],
+      ['KODE ACCOUNT',':',kodeAccount],
+      [],
+    ];
+  }
+
+  for(let i=0;i<stores.length;i+=2){
+    const left = tagBlock(stores[i], i+1);
+    const right = (i+1<stores.length) ? tagBlock(stores[i+1], i+2) : null;
+    const maxLen = Math.max(left.length, right?right.length:0);
+    for(let r=0;r<maxLen;r++){
+      const lRow = left[r]||[];
+      const rRow = right?(right[r]||[]):[];
+      const combined = new Array(1).fill(null).concat(lRow); // shift by 1 col (col A blank like original)
+      while(combined.length < 12) combined.push(null);
+      combined.push(...rRow);
+      tagRows.push(combined);
+    }
+    tagRows.push([]); // blank separator row between blocks
+  }
+  const wsTag = XLSX.utils.aoa_to_sheet(tagRows);
+  wsTag['!cols'] = [{wch:3},{wch:16},{wch:2.5},{wch:42},{wch:3},{wch:3},{wch:3},{wch:3},{wch:3},{wch:3},{wch:8},{wch:6},{wch:16},{wch:2.5},{wch:42}];
+  XLSX.utils.book_append_sheet(wb, wsTag, 'TAG ALAMAT');
+
+  // --- SHEET 3: TOKO TERPILIH (rekap untuk driver) ---
+  const rekapHeader = ['No','Kode','Nama Toko','Kota','Format Toko','UP','Kontak','Alamat','Qty'];
+  const rekapRows = stores.map((s,i)=>[i+1, s.kode, s.nama, s.kota, s.format||'', s.up, s.kontak, s.alamat, selected[s.kode]]);
+  const wsRekap = XLSX.utils.aoa_to_sheet([rekapHeader, ...rekapRows]);
+  wsRekap['!cols'] = [{wch:4},{wch:8},{wch:32},{wch:18},{wch:18},{wch:20},{wch:14},{wch:50},{wch:6}];
+  XLSX.utils.book_append_sheet(wb, wsRekap, 'TOKO TERPILIH');
+
+  const filename = `ERA-EXPRESS_${ref}.xlsx`;
+  XLSX.writeFile(wb, filename);
+
+  saveHistory(lastBatch, totalQty, kotaSet.size);
+}
+
+function resetForm(){
+  if(!confirm('Hapus semua toko yang sudah dipilih?')) return;
+  selected = {};
+  lastBatch = null;
+  document.getElementById('previewCard').style.display='none';
+  renderStoreTable();
+}
+
+renderStoreTable();
+renderHistory();
+</script>
+</body>
+</html>
